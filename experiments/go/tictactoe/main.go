@@ -67,40 +67,103 @@ func runBoardEngine(board Board) {
 
 			printMessage("Invalid row col pair.")
 
-		} else {
+			continue
 
-			row, rowErr := strconv.Atoi(cleanInput[0])
-			col, colErr := strconv.Atoi(cleanInput[1])
+		}
+
+		row, rowErr := strconv.Atoi(cleanInput[0])
+		col, colErr := strconv.Atoi(cleanInput[1])
 
 
-			if rowErr != nil || colErr != nil {
+		if rowErr != nil || colErr != nil {
 
-				break
+			break
 
-			} else {
+		}
 
-				if row >= board.width || col >= board.height {
+		if row >= board.width || col >= board.height {
 
-					printMessage("Invalid range for row col")
+			printMessage("Invalid range for row col")
+			continue
 
-				} else {
+		}
 
-					if playerMove(board, row, col, currentPlayer) {
+		if playerMove(board, row, col, currentPlayer) {
 
-						validMoves++
-						currentPlayer = switchPlayer(currentPlayer)
+			validMoves++
 
-						if validMoves > 4 {
-							printMessage("Time to check for victory!")
-						}
-
-					}
-
+			if validMoves > 4 {
+				printMessage("Time to check for victory!")
+				if checkForVictory(board) {
+					fmt.Printf("Player %d won!\n", currentPlayer)
+					break
 				}
 			}
 
+			currentPlayer = switchPlayer(currentPlayer)
+
+		} else {
+
+			printMessage("Invalid move. That location is already taken.")
+
 		}
 	}
+}
+
+func checkForVictory(board Board) bool  {
+
+	player1Victory := strings.Repeat(board.mark1, 3)
+	player2Victory := strings.Repeat(board.mark2, 3)
+
+	row0State := strings.Join(board.row0, "")
+	row1State := strings.Join(board.row1, "")
+	row2State := strings.Join(board.row2, "")
+
+	if row0State == player1Victory || row0State == player2Victory {
+		return true
+	}
+
+	if row1State == player1Victory || row1State == player2Victory {
+		return true
+	}
+
+	if row2State == player1Victory || row2State == player2Victory {
+		return true
+	}
+
+	for i := 0; i < board.width; i++ {
+		colState := ""
+
+		for j:= 0; j < board.height; j++ {
+			colState += board.board[i + (board.width * j)]
+		}
+
+		if colState == player1Victory || colState == player2Victory {
+			return true
+		}
+	}
+
+	diagonalState := ""
+
+	for j := 0; j < board.width; j++ {
+		diagonalState += board.board[j + (board.width * j)]
+	}
+
+	if diagonalState == player1Victory || diagonalState == player2Victory {
+		return true
+	}
+
+	diagonalState = ""
+
+	for j := 1; j <= board.height; j++ {
+		diagonalState += board.board[j * (board.height - 1)]
+	}
+
+	if diagonalState == player1Victory || diagonalState == player2Victory {
+		return true
+	}
+
+	return false
 }
 
 func switchPlayer (player int) int {
@@ -197,7 +260,7 @@ func placeMark(board Board, location int, player int)  {
 }
 
 func printMessage(message string) {
-	fmt.Println()
-	fmt.Println(message)
-	fmt.Println()
+
+	fmt.Println("\n" + message + "\n")
+
 }
